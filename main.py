@@ -9,6 +9,9 @@ from Src.Logics.Services.storage_service import storage_service
 from Src.Models.nomenclature_model import nomenclature_model
 from Src.Logics.Services.service import service
 from Src.Logics.Services.reference_service import reference_service
+from src.models.event_type import event_type
+from src.models.log_type_model import log_type
+from src.Logic.storage_observer import storage_observer
 
 
 
@@ -31,18 +34,23 @@ def get_report(storage_key: str):
     
     keys = storage.storage_keys( start.storage )
     if storage_key == "" or  storage_key not in keys:
-        return error_proxy.create_error_response(app, f"Некорректный передан запрос! Необходимо передать: /api/report/<storage_key>. Список ключей (storage_key): {keys}.", 400)
+        text = 'Ошибка ввода ключа'
+        storage_observer.raise_event(event_type.make_log(log_type.log_type_error(), f"{text}", "main.py/get_report"))
+        return error_proxy.create_response(app, text, 404)
     
     # Создаем фабрику
     report = report_factory()
     data = start.storage.data
+    storage_observer.raise_event(event_type.make_log(log_type.log_type_info(), f"Получить репорт {storage_key}", "main.py/get_report"))
     
     # Формируем результат
     try:
         result = report.create_response( options.settings.report_mode, data, storage_key, app )  
         return result
     except Exception as ex:
-        return error_proxy.create_error_response(app, f"Ошибка при формировании отчета {ex}", 500)
+        text = 'Ошибка ввода айди'
+        storage_observer.raise_event(event_type.make_log(log_type.log_type_error(), f"{text}", "main.py/get_nomenclature_turns"))
+        return error_proxy.create_response(app, text, 500)
 
 # Отчетность
 
@@ -57,9 +65,11 @@ def get_turns():
     # Получить параметры
     args = request.args
     if "start_period" not in args.keys():
+        storage_observer.raise_event(event_type.make_log(log_type.log_type_error(), f"Ошибка ввода ключа", "main.py/get_turns"))
         return error_proxy.create_error_response(app, "Необходимо передать параметры: start_period, stop_period!")
         
     if "stop_period" not in args.keys():
+        storage_observer.raise_event(event_type.make_log(log_type.log_type_error(), f"Ошибка ввода ключа", "main.py/get_turns"))
         return error_proxy.create_error_response(app, "Необходимо передать параметры: start_period, stop_period!")
     
     start_date = datetime.strptime(args["start_period"], "%Y-%m-%d")
@@ -68,6 +78,7 @@ def get_turns():
     source_data = start.storage.data[  storage.storage_transaction_key()   ]      
     data = storage_service( source_data   ).create_turns( start_date, stop_date )      
     result = service.create_response( app, data )
+    storage_observer.raise_event(event_type.make_log(log_type.log_type_info(), f"Получить складские остатки", "main.py/get_turns"))
     return result
       
 @app.route("/api/storage/<nomenclature_id>/turns", methods = ["GET"] )
@@ -87,7 +98,8 @@ def get_turns_nomenclature(nomenclature_id):
     try:
         start_date = datetime.strptime(args["start_period"], "%Y-%m-%d")
         stop_date = datetime.strptime(args["stop_period"], "%Y-%m-%d")
-    except:
+    except Exception as ex:
+        storage_observer.raise_event(event_type.make_log(log_type.log_type_error(), f"Ошибка {ex}", "main.py/get_turns"))
         return error_proxy.create_error_response(app, "Некорректно перпеданы параметры: start_period, stop_period", 400)    
 
     transactions_data = start.storage.data[  storage.storage_transaction_key()   ]   

@@ -1,3 +1,4 @@
+from Src.Models.log_type_model import log_type
 from Src.exceptions import exception_proxy, argument_exception
 from Src.Logics.storage_observer import storage_observer
 from Src.Models.event_type import event_type
@@ -26,6 +27,7 @@ class settings():
     @inn.setter
     def inn(self, value: int):
         exception_proxy.validate(value, int)
+        storage_observer.raise_event(event_type.make_log(log_type.log_type_debug(), "изменение INN", "settings.py/INN"))
         self._inn = value
          
     @property     
@@ -40,6 +42,7 @@ class settings():
     @short_name.setter
     def short_name(self, value:str):
         exception_proxy.validate(value, str)
+        storage_observer.raise_event(event_type.make_log(log_type.log_type_debug(), "изменение name", "settings.py/name"))
         self._short_name = value
         
         
@@ -52,6 +55,7 @@ class settings():
             
     @is_first_start.setter        
     def is_first_start(self, value: bool):
+        storage_observer.raise_event(event_type.make_log(log_type.log_type_debug(), "изменение is_first_start", "settings.py/is_first_start"))
         self._first_start = value
         
     @property
@@ -67,7 +71,7 @@ class settings():
     @report_mode.setter
     def report_mode(self, value: str):
         exception_proxy.validate(value, str)
-        
+        storage_observer.raise_event(event_type.make_log(log_type.log_type_debug(), "изменение report_mode", "settings.py/report_mode"))
         self._mode = value
     
 
@@ -86,7 +90,8 @@ class settings():
             self._block_period = value
             
             if legacy_period != self._block_period:
-                storage_observer.raise_event(  event_type.changed_block_period()  )    
+                storage_observer.raise_event(event_type.changed_block_period())
+            storage_observer.raise_event(event_type.make_log(log_type.log_type_debug(), "изменение block_period","settings.py/block_period"))
 
             return
 

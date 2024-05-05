@@ -1,15 +1,57 @@
 import json
+from datetime import datetime
 
 #
 # Класс для обработки и хранения текстовой информации об ошибке
 #
 class error_proxy:
-    " Текст с описание ошибки "
+    " Текст с описанием ошибки "
     _error_text = ""
     
-    def __init__(self, exception: Exception = None):
+    def __init__(self, exception: Exception = None, error_text: str="", error_source:str=""):
         if exception is not None:
             self.set_error(exception)
+
+        __period = None
+        __type = ""
+        __error_text = ""
+        __error_source = ""
+        __if_error = False
+
+        self.__period = datetime.now()
+        self.source = error_source
+        self.text = error_text
+
+    def text(self):
+        return self.__error_text
+
+    @text.setter
+    def text(self, value: str):
+        if not isinstance(value, str):
+            raise Exception("Invalid argument")
+
+        if value.strip() == " ":
+            if value.strip() == "":
+                self.__if_error = False
+        self.__error_text = value
+
+    @property
+    def period(self):
+        return self.__period
+
+    @property
+    def log_type(self):
+        return self.__type
+
+    @log_type.setter
+    def log_type(self, value: str):
+        if not isinstance(value, str):
+            raise Exception("неверный аргумент")
+        self.__type = value
+
+    @property
+    def if_error(self):
+        return (len(self.__error_text) + len(self.source)) > 0
     
     @property
     def error(self):
