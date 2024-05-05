@@ -8,6 +8,7 @@ from Src.Logics.Services.service import service
 from Src.Models.event_type import event_type
 from Src.Logics.storage_observer import storage_observer
 from Src.reference import reference
+from Src.Models.log_type_model import log_type
 
 
 from datetime import datetime
@@ -85,7 +86,9 @@ class storage_service(service):
         filter = prototype.filter_by_period( block_period, stop_period)
         
         # Рассчитанные обороты
-        calculated_turns = self.__build_turns( filter. data )
+        calculated_turns = self.__build_turns(filter.data)
+
+        storage_observer.raise_event(event_type.make_log(log_type.log_type_debug(), "создание оборотов по номенклатуре ", "storage_service.py/create_turns_by_nomenclature"))
         
         # Сформируем результат
         aggregate_key = process_factory.aggregate_key()
@@ -118,6 +121,8 @@ class storage_service(service):
         filter = filter.filter_by_nomenclature( nomenclature )
         if not filter.is_empty:
             raise operation_exception(f"Невозможно сформировать обороты по указанным данных: {filter.error}")
+
+        storage_observer.raise_event(event_type.make_log(log_type.log_type_debug(), "создание оборотов по номенклатуре ", "storage_service.py/create_turns_by_nomenclature"))
         
         # Рассчитанные обороты    
         calculated_turns =  self.__build_turns( filter. data )   
@@ -166,8 +171,10 @@ class storage_service(service):
             if filter.is_empty:
                 for transaction in filter.data:
                     transactions.append( transaction )
-                    
-            filter.data = self.data        
+
+            filter.data = self.data
+
+            storage_observer.raise_event(event_type.make_log(log_type.log_type_debug(), "создание оборотoв", "storage_service.py/create_turns"))
             
         return self.__build_turns( transactions )     
     
@@ -196,6 +203,8 @@ class storage_service(service):
         processing = process_factory().create( process_factory.debit_key() )
         transactions = processing().process( receipt.rows() )
         key = storage.storage_transaction_key()
+
+        storage_observer.raise_event(event_type.make_log(log_type.log_type_debug(), "получить обороты по рецепту", "storage_service.py/create_recipt"))
         
         data = storage().data[ key ]
         for transaction in transactions:

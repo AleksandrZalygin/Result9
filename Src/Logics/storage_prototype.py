@@ -11,7 +11,7 @@ class storage_prototype(error_proxy):
     
     def __init__(self, data: list) -> None:
         if len(data) <= 0:
-            self.error = "Набор данных пуст!"
+            self.text = "Wrong argument"
         
         exception_proxy.validate(data, list)
         self.__data = data
@@ -34,10 +34,10 @@ class storage_prototype(error_proxy):
         exception_proxy.validate(start_period, datetime)
         exception_proxy.validate(stop_period, datetime)
         if len(self.__data) <= 0:
-            self.error = "Некорректно переданы параметры!"
+            self.text = "Некорректно переданы параметры!"
             
         if start_period > stop_period:
-            self.error = "Некорректный период!"
+            self.text = "Некорректный период!"
             
          
         if not self.is_empty:

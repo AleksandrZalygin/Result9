@@ -25,7 +25,10 @@ class storage():
         for  inheritor in reference.__subclasses__():
             self.__mapping[inheritor.__name__] = inheritor
 
-    
+    @staticmethod
+    def logs_key():
+        return "logs"
+
     @property
     def data(self) -> dict:
         """

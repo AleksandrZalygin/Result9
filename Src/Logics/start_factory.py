@@ -1,4 +1,5 @@
 # Модели
+from Src.Logics.log_master import log_master
 from Src.Models.group_model import group_model
 from Src.Models.unit_model import unit_model
 from Src.Models.nomenclature_model import nomenclature_model
@@ -25,7 +26,10 @@ class start_factory:
         exception_proxy.validate(_options, settings)
         self.__oprions = _options
         self.__storage = _storage
-        
+
+    def __create_logs(self):
+        self.__logger = log_master()
+        self.storage.data[storage.logs_key()] = []
     
     def __save(self, key:str, items: list):
         """
@@ -38,6 +42,9 @@ class start_factory:
         
         if self.__storage == None:
             self.__storage = storage()
+
+        if self.__logger == None:
+            self.__logger = self.__create_logs()
             
         self.__storage.data[ key ] = items
         
